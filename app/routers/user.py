@@ -16,7 +16,14 @@ from app.schemas.user import (
     UserLogin,
     LoginResponse
 )
+from app.schemas.user import UserUpdate
 
+from app.crud.user import (
+    get_users,
+    get_user_by_id,
+    update_user,
+    delete_user
+)
 from app.crud.user import (
     authenticate_user
 )
@@ -87,4 +94,82 @@ def get_me(
         "name": current_user.name,
         "email": current_user.email,
         "role": current_user.role
+    }
+
+@router.get(
+    "/",
+    response_model=list[UserResponse]
+)
+def get_all_users(
+    db: Session = Depends(get_db)
+):
+
+    return get_users(db)
+
+@router.get(
+    "/{user_id}",
+    response_model=UserResponse
+)
+def get_single_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+
+    user = get_user_by_id(
+        db,
+        user_id
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return user
+@router.put(
+    "/{user_id}",
+    response_model=UserResponse
+)
+def update_single_user(
+    user_id: int,
+    user_data: UserUpdate,
+    db: Session = Depends(get_db)
+):
+
+    user = update_user(
+        db=db,
+        user_id=user_id,
+        name=user_data.name,
+        email=user_data.email
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return user
+
+
+@router.delete("/{user_id}")
+def remove_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+
+    deleted = delete_user(
+        db,
+        user_id
+    )
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return {
+        "message": "User deleted successfully"
     }
