@@ -29,7 +29,9 @@ from app.crud.product import (
     delete_product,
     update_product_image
 )
-
+from app.crud.product import (
+    search_products
+)
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
@@ -69,6 +71,19 @@ def list_products(
 ):
     return get_products(db)
 
+@router.get(
+    "/search/",
+    response_model=list[ProductResponse]
+)
+def search_product_list(
+    q: str,
+    db: Session = Depends(get_db)
+):
+
+    return search_products(
+        db,
+        q
+    )
 
 @router.get(
     "/{product_id}",
