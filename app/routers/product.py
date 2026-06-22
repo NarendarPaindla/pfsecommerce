@@ -1,7 +1,12 @@
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
+import os
 
+from uuid import uuid4
+
+from fastapi import UploadFile
+from fastapi import File
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
@@ -21,7 +26,8 @@ from app.crud.product import (
     get_products,
     get_product_by_id,
     update_product,
-    delete_product
+    delete_product,
+    update_product_image
 )
 
 router = APIRouter(
@@ -136,4 +142,60 @@ def remove_product(
     return {
         "message":
         "Product deleted successfully"
+    }
+
+@router.post(
+    "/{product_id}/upload-image"
+)
+def upload_product_image(
+    product_id: int,
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
+):
+
+    product = get_product_by_id(
+        db,
+        product_id
+    )
+
+    if not product:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    extension = image.filename.split(".")[-1]
+
+    filename = (
+        f"{uuid4()}.{extension}"
+    )
+
+    file_path = (
+        f"uploads/products/{filename}"
+    )
+
+    with open(
+        file_path,
+        "wb"
+    ) as buffer:
+
+        buffer.write(
+            image.file.read()
+        )
+
+    updated_product = (
+        update_product_image(
+            db,
+            product_id,
+            file_path
+        )
+    )
+
+    return {
+        "message":
+        "Image uploaded successfully",
+
+        "image_path":
+        updated_product.image
     }

@@ -110,3 +110,28 @@ def delete_product(
     db.commit()
 
     return True
+
+def update_product_image(
+    db: Session,
+    product_id: int,
+    image_path: str
+):
+
+    product = (
+        db.query(Product)
+        .filter(
+            Product.id == product_id
+        )
+        .first()
+    )
+
+    if not product:
+        return None
+
+    product.image = image_path
+
+    db.commit()
+
+    db.refresh(product)
+
+    return product
