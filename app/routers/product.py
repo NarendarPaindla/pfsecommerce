@@ -36,6 +36,14 @@ from app.crud.product import (
 from app.crud.product import (
     filter_products
 )
+
+from app.schemas.product import (
+    ProductPaginationResponse
+)
+
+from app.crud.product import (
+    paginate_products
+)
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
@@ -107,7 +115,22 @@ def filter_product_list(
         min_price=min_price,
         max_price=max_price
     )
+@router.get(
+    "/paginated/",
+    response_model=
+    ProductPaginationResponse
+)
+def paginated_products(
+    page: int = 1,
+    size: int = 10,
+    db: Session = Depends(get_db)
+):
 
+    return paginate_products(
+        db,
+        page,
+        size
+    )
 @router.get(
     "/{product_id}",
     response_model=ProductResponse

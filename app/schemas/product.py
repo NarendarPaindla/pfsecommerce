@@ -29,3 +29,11 @@ class ProductResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class ProductPaginationResponse(
+    BaseModel
+):
+    total: int
+    page: int
+    size: int
+    data: list[ProductResponse]

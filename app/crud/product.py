@@ -179,3 +179,33 @@ def filter_products(
         )
 
     return query.all()
+
+def paginate_products(
+    db: Session,
+    page: int,
+    size: int
+):
+
+    total = (
+        db.query(Product)
+        .count()
+    )
+
+    offset = (
+        (page - 1)
+        * size
+    )
+
+    products = (
+        db.query(Product)
+        .offset(offset)
+        .limit(size)
+        .all()
+    )
+
+    return {
+        "total": total,
+        "page": page,
+        "size": size,
+        "data": products
+    }
