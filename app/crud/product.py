@@ -150,3 +150,32 @@ def search_products(
         )
         .all()
     )
+
+def filter_products(
+    db: Session,
+    category_id: int | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None
+):
+
+    query = db.query(Product)
+
+    if category_id is not None:
+
+        query = query.filter(
+            Product.category_id == category_id
+        )
+
+    if min_price is not None:
+
+        query = query.filter(
+            Product.price >= min_price
+        )
+
+    if max_price is not None:
+
+        query = query.filter(
+            Product.price <= max_price
+        )
+
+    return query.all()

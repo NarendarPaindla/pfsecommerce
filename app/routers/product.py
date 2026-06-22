@@ -32,6 +32,10 @@ from app.crud.product import (
 from app.crud.product import (
     search_products
 )
+
+from app.crud.product import (
+    filter_products
+)
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
@@ -83,6 +87,25 @@ def search_product_list(
     return search_products(
         db,
         q
+    )
+
+
+@router.get(
+    "/filter/",
+    response_model=list[ProductResponse]
+)
+def filter_product_list(
+    category_id: int | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    db: Session = Depends(get_db)
+):
+
+    return filter_products(
+        db=db,
+        category_id=category_id,
+        min_price=min_price,
+        max_price=max_price
     )
 
 @router.get(
