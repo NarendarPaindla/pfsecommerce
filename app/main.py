@@ -14,6 +14,14 @@ from app.routers.product import (
     router as product_router
 )
 
+from app.routers.cart import (
+    router as cart_router
+)
+
+from app.routers.order import (
+    router as order_router
+)
+
 app = FastAPI(
     title="E-Commerce Backend"
 )
@@ -27,6 +35,8 @@ app.mount(
 app.include_router(user_router)
 app.include_router(category_router)
 app.include_router(product_router)
+app.include_router(cart_router)
+app.include_router(order_router)
 
 
 @app.get("/")
