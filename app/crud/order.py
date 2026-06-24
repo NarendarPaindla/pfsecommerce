@@ -97,3 +97,116 @@ def create_order(
     db.commit()
 
     return order
+
+def get_order_history(
+    db: Session,
+    user_id: int
+):
+
+    orders = (
+        db.query(Order)
+        .filter(
+            Order.user_id == user_id
+        )
+        .all()
+    )
+
+    response = []
+
+    for order in orders:
+
+        order_items = (
+            db.query(OrderItem)
+            .filter(
+                OrderItem.order_id
+                == order.id
+            )
+            .all()
+        )
+
+        items = []
+
+        total_amount = 0
+
+        for item in order_items:
+
+            product = (
+                db.query(Product)
+                .filter(
+                    Product.id ==
+                    item.product_id
+                )
+                .first()
+            )
+
+            item_total = (
+                item.price
+                * item.quantity
+            )
+
+            total_amount += item_total
+
+            items.append(
+                {
+                    "product_name":
+                    product.name,
+
+                    "quantity":
+                    item.quantity,
+
+                    "price":
+                    item.price,
+
+                    "total":
+                    item_total
+                }
+            )
+
+        response.append(
+            {
+                "order_id":
+                order.id,
+
+                "total_amount":
+                total_amount,
+
+                "items":
+                items
+            }
+        )
+
+    return response
+
+def get_all_orders(
+    db: Session
+):
+
+    return (
+        db.query(Order)
+        .all()
+    )
+
+def update_order_status(
+    db: Session,
+    order_id: int,
+    status: str
+):
+
+    order = (
+        db.query(Order)
+        .filter(
+            Order.id == order_id
+        )
+        .first()
+    )
+
+    if not order:
+        return None
+
+    order.status = status
+
+    db.commit()
+
+    db.refresh(order)
+
+    return order

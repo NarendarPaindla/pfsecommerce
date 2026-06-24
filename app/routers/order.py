@@ -12,12 +12,22 @@ from app.dependencies import (
 from app.models.user import User
 
 from app.schemas.order import (
-    OrderResponse
+    OrderResponse,
+     OrderHistoryItem,
+     UpdateOrderStatusRequest
 )
 
 from app.crud.order import (
-    create_order
+    create_order,
+    get_order_history,
+     get_all_orders,
+    update_order_status
 )
+
+from app.core.permissions import (
+    require_admin
+)
+
 
 router = APIRouter(
     prefix="/orders",
@@ -61,4 +71,62 @@ def create_new_order(
 
         "order_id":
         result.id
+    }
+
+@router.get(
+    "/history",
+    response_model=
+    list[OrderHistoryItem]
+)
+def order_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
+):
+
+    return get_order_history(
+        db,
+        current_user.id
+    )
+@router.get(
+    "/admin/all"
+)
+def admin_all_orders(
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
+):
+
+    return get_all_orders(db)
+
+@router.put(
+    "/admin/status/{order_id}"
+)
+def admin_update_status(
+    order_id: int,
+    request:
+    UpdateOrderStatusRequest,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
+):
+
+    order = update_order_status(
+        db,
+        order_id,
+        request.status
+    )
+
+    if not order:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Order not found"
+        )
+
+    return {
+        "message":
+        "Order status updated",
+
+        "status":
+        order.status
     }
